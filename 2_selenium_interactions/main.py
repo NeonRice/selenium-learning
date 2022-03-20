@@ -19,17 +19,21 @@ class ascii_colors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+
 def capcha_function(x):
     return math.log(math.fabs(12 * math.sin(x)))
 
+
 def formatted_exception(e, message):
     print(f"{ascii_colors.RED + ascii_colors.BOLD + message} {ascii_colors.END + ascii_colors.YELLOW + str(e)+ ascii_colors.END}")
-    
+
 
 def submit(wait: WebDriverWait):
     # find submit button
-    submit_button = wait.until(EC.presence_of_element_located((By.XPATH, "//button[@type='submit']")))
+    submit_button = wait.until(EC.presence_of_element_located(
+        (By.XPATH, "//button[@type='submit']")))
     submit_button.click()
+
 
 if __name__ == "__main__":
     driver = webdriver.Chrome()
@@ -46,7 +50,8 @@ if __name__ == "__main__":
             raise AssertionError("Alert no pop up")
         alert.accept()
 
-        input_element = wait.until(EC.presence_of_element_located((By.ID, "input_value")))
+        input_element = wait.until(
+            EC.presence_of_element_located((By.ID, "input_value")))
         if (not input_element):
             raise AssertionError("Input value not found")
         result = capcha_function(float(input_element.text))
@@ -60,10 +65,12 @@ if __name__ == "__main__":
         if not result_alert:
             raise AssertionError("Result alert no pop up")
         if "Congrats" in result_alert.text:
-            print(ascii_colors.GREEN + "Trial passed!\n" + ascii_colors.END + ascii_colors.CYAN + result_alert.text + ascii_colors.END)
+            print(ascii_colors.GREEN + "Trial passed!\n" + ascii_colors.END +
+                  ascii_colors.CYAN + result_alert.text + ascii_colors.END)
         else:
-            print(ascii_colors.RED + "Trial failed!\n" + ascii_colors.END + ascii_colors.YELLOW + result_alert.text + ascii_colors.END)
-            
+            print(ascii_colors.RED + "Trial failed!\n" + ascii_colors.END +
+                  ascii_colors.YELLOW + result_alert.text + ascii_colors.END)
+
         result_alert.dismiss()
 
         assert "No results found." not in driver.page_source
@@ -75,6 +82,3 @@ if __name__ == "__main__":
         formatted_exception(e, "Unknown exception!")
     finally:
         driver.close()
-    
-
-
