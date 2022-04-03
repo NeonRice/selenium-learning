@@ -34,14 +34,37 @@ def submit(wait: WebDriverWait):
         (By.XPATH, "//button[@type='submit']")))
     submit_button.click()
 
+def solve(wait: WebDriverWait):
+    input_element = wait.until(
+        EC.presence_of_element_located((By.ID, "input_value")))
+    if (not input_element):
+        raise AssertionError("Input value not found")
+    result = capcha_function(float(input_element.text))
+
+    answer_field = driver.find_element(By.ID, "answer")
+    answer_field.clear()
+    answer_field.send_keys(str(result))
+    answer_field.send_keys(Keys.RETURN)
+    result_alert = wait.until(EC.alert_is_present())
+    if not result_alert:
+        raise AssertionError("Result alert no pop up")
+    alert_text = result_alert.text
+    result_alert.dismiss()
+
+    if "Congrats" in alert_text:
+        print(ascii_colors.GREEN + "Trial passed!\n" + ascii_colors.END +
+              ascii_colors.CYAN + alert_text + ascii_colors.END)
+    else:
+        print(ascii_colors.RED + "Trial failed!\n" + ascii_colors.END +
+              ascii_colors.YELLOW + alert_text + ascii_colors.END)
+    return alert_text
+    
 
 if __name__ == "__main__":
     driver = webdriver.Chrome()
     wait = WebDriverWait(driver, timeout=10)
     try:
         driver.get("https://suninjuly.github.io/alert_accept.html")
-        #assert "Cat memes" in driver.title, "Python in page title"
-
         submit(wait)
 
         # accept alert
@@ -50,28 +73,14 @@ if __name__ == "__main__":
             raise AssertionError("Alert no pop up")
         alert.accept()
 
-        input_element = wait.until(
-            EC.presence_of_element_located((By.ID, "input_value")))
-        if (not input_element):
-            raise AssertionError("Input value not found")
-        result = capcha_function(float(input_element.text))
+        solve(wait)
 
-        answer_field = driver.find_element(By.ID, "answer")
-        answer_field.clear()
-        answer_field.send_keys(str(result))
-        answer_field.send_keys(Keys.RETURN)
+        # Redirect solve
+        driver.get("http://suninjuly.github.io/redirect_accept.html")
+        submit(wait)
 
-        result_alert = wait.until(EC.alert_is_present())
-        if not result_alert:
-            raise AssertionError("Result alert no pop up")
-        if "Congrats" in result_alert.text:
-            print(ascii_colors.GREEN + "Trial passed!\n" + ascii_colors.END +
-                  ascii_colors.CYAN + result_alert.text + ascii_colors.END)
-        else:
-            print(ascii_colors.RED + "Trial failed!\n" + ascii_colors.END +
-                  ascii_colors.YELLOW + result_alert.text + ascii_colors.END)
-
-        result_alert.dismiss()
+        driver.switch_to.window(driver.window_handles[1])
+        solve(wait)
 
         assert "No results found." not in driver.page_source
     except AssertionError as e:
@@ -81,4 +90,6 @@ if __name__ == "__main__":
     except Exception as e:
         formatted_exception(e, "Unknown exception!")
     finally:
-        driver.close()
+        for handle in driver.window_handles:
+            driver.switch_to.window(handle)
+            driver.close()
