@@ -92,7 +92,7 @@ def solve(wait: WebDriverWait):
 
 if __name__ == "__main__":
     driver = webdriver.Chrome()
-    wait = WebDriverWait(driver, timeout=10)
+    wait = WebDriverWait(driver, timeout=20)
     try:
         driver.get("http://suninjuly.github.io/explicit_wait2.html")
         # submit(wait)
